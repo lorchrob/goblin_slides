@@ -227,6 +227,8 @@ Termination? (Mostly) well-formed inputs?
         \item A \green{context-sensitive input generation tool}, supported by \pause
         \item A new \green{DSL} with a formal semantics \pause
         \item A new \green{search algorithm} to address the underlying problem \pause
+        \item Supporting constraint solving over arbitrary SMT theories \pause
+        \item And evaluated in the context of real fuzzing workflows \pause
         \end{itemize}
         \item Given a context-sensitive grammar \blue{$G$}, find \blue{$x$} such that \blue{$x \in \mathcal{L}(G)$} \pause
         \item What is a context-sensitive grammar? 
@@ -473,7 +475,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
   }
   {\center \dttree} \pause 
 
-  \green{Not} a string {\scriptsize \texttt{0b000000010000011000000010001100100001}}
+  \green{Not} a string {\scriptsize \texttt{0x0106020321}}
 % Grammar producing a string vs grammar producing an ADT term
 % In the ADT view, we model derivations in progress as derivation trees
 % Informally, the semantics of a Goblin input is the set of closed derivation trees 
@@ -542,7 +544,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
     \frametitle{Semantics: Constraint Satisfaction}
  \begin{lstlisting}[style=goblin]
 ...
-@\color{teal}<BYTE>@ :: BitVec(8) { @\color{teal}<BYTE>@ bvult 0x88;}; 
+@\color{teal}<BYTE>@ :: BitVec(8) { @\color{teal}<BYTE>@ bvult 0x88; }; 
 ...
 \end{lstlisting}
 
@@ -570,7 +572,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame} 
     \frametitle{\system{} Workflow}
-    How does \system{} find $t$ such that $t \in \mathcal{L}_{\textsf{AST}}(G)$?\pause
+    How does \system{} find \blue{$t$} such that \blue{$t \in \mathcal{L}_{\textsf{AST}}(G)$}?\pause
     \begin{enumerate}
         \item \green{Context-free wellformedness} and other syntax checks\pause
         \item Type checking\pause
@@ -582,6 +584,29 @@ Cryptographic hashes, checksums, or \green{any computable function}
         \item Serialize
     \end{enumerate}
     % Mention serialization step
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Context-Free Wellformedness}
+    \begin{itemize}
+        \item \green{Context-free language emptiness} is a modeling issue, stemming from 
+        \green{non-wellfounded recursion} \pause
+        \item We perform a more general check called \green{context-free wellformedness}\pause
+        \item[1.]  Iteratively expand a set \blue{$S$} of nonterminals known to be able to produce finite derivations 
+        until reaching a fixpoint\pause
+        \item[2.] Check every reachable nonterminal is in \blue{$S$}\pause
+    \end{itemize}
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<SAE\_PACKET>@ ::= @\color{darkred}<COMMIT>@ | @\color{darkred}<CONFIRM>@;
+@\color{darkred}<COMMIT>@ ::= @\color{teal}<FIELD>@ @\color{darkred}<RG\_ID\_LIST>@;
+@\highlight@@\color{darkred}<RG\_ID\_LIST>@ ::= @\color{teal}<RG\_ID>@ @\color{darkred}<RG\_ID\_LIST>@;
+@\color{darkred}<CONFIRM>@ ::= @\color{teal}<FIELD1> <FIELD2>@;
+...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Abstract Derived Fields}
 \end{frame}
 
 \begin{frame}
@@ -596,6 +621,26 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame}
     \frametitle{Evaluation}
+    Case study 1, 2, 3: Compare directly with prior work, ISLa\pause
+    \begin{itemize}
+        \item XML, ScriptSize C, and CSV input generation \pause
+        \item Matching tags, definition before use, and column count\pause
+        \item Measure \green{efficiency} in inputs generated per minute and \green{diversity}
+        in \green{k-path coverage} for $k=3$ (percentage of paths of length $3$ traversed through the grammar)\pause
+        \item Outperform prior work by $\sim$$10-100\%$ in all metrics, save for efficiency of CSV inputs
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Evaluation}
+    Case study 4\pause
+    \begin{itemize}
+        \item SAECRED input generation (SyGuS engine; \system{} predecessor) \pause
+        \item Handle bit vector SMT constraints not expressible in ISLa \pause
+        \item 36x improvement in efficiency \pause
+        \item Able to produce outputs for more than twice the number of grammars 
+        ($\sim$24,000 / $\sim$97000 up to $\sim$49,000 / $\sim$97,000)
+    \end{itemize}
     % Comparison w/ ISLa: XML, ScriptSize C, and CSV
     %   Main metric are __efficiency__ in inputs/minute and __diversity__ in k-path coverage (define)
     %   Outperform prior work in the ballpark of 20-30 percentage points 
@@ -607,6 +652,12 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame}
     \frametitle{Discussion and future work}
+    \begin{itemize}
+        \item User-facing language (attribute grammars, built-ins like {\scriptsize\texttt{length(.)}})\pause
+        \item More powerful type system (e.g., polymorphism)\pause
+        \item AI abstraction/refinement algorithms\pause
+        \item CDCL-style backjumping
+    \end{itemize}
     % e.g., CLP semantics
 \end{frame}
 

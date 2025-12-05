@@ -1,27 +1,16 @@
-\frametitle{Semantics: Constraint Satisfaction}
- \begin{lstlisting}[style=goblin]
-...
-@\color{teal}<BYTE>@ :: BitVec(8) { @\color{teal}<BYTE>@ bvult 0x88;};
+\frametitle{Context-Free Wellformedness}
+    \begin{itemize}
+        \item \green{Context-free language emptiness} is a modeling issue, stemming from
+        \green{non-wellfounded recursion} \pause
+        \item We perform a more general check called \green{context-free wellformedness}\pause
+        \item[1.]  Iteratively expand a set \blue{$S$} of nonterminals known to be able to produce finite derivations
+        until reaching a fixpoint\pause
+        \item[2.] Check every reachable nonterminal is in \blue{$S$}\pause
+    \end{itemize}
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<SAE\_PACKET>@ ::= @\color{darkred}<COMMIT>@ | @\color{darkred}<CONFIRM>@;
+@\color{darkred}<COMMIT>@ ::= @\color{teal}<FIELD>@ @\color{darkred}<RG\_ID\_LIST>@;
+@\highlight@@\color{darkred}<RG\_ID\_LIST>@ ::= @\color{teal}<RG\_ID>@ @\color{darkred}<RG\_ID\_LIST>@;
+@\color{darkred}<CONFIRM>@ ::= @\color{teal}<FIELD1> <FIELD2>@;
 ...
 \end{lstlisting}
-
-\newcommand{\dttree}{%
-    \begin{tikzpicture}[
-      scale=0.7, transform shape,
-      level distance=14mm,
-      level 1/.style={sibling distance=45mm},
-      level 2/.style={sibling distance=25mm},
-      leaf/.style={draw, ellipse, inner sep=2pt}
-    ]
-      \node[opacity=.5] {1: $\langle$Packet$\rangle[0]$} [-to]
-        child[opacity=.5] { node {2: $\langle$Type$\rangle[0]$}
-          child { node[leaf] {5: $0x01$} }}
-        child[opacity=.5] { node {3: $\langle$Aux$\rangle[0]$}
-          child { node[leaf] {6: $0x06$} } }
-        child[opacity=.5] { node {4: $\langle$Payload$\rangle[0]$}
-          child { node {7: $\langle$F1$\rangle[0]$} child { node[leaf] {10: $0x02$} } }
-          child { node {8: $\langle$F2$\rangle[0]$} child { node[leaf] {11: $0x03$} } }
-          child { node {9: $\langle$Bytes$\rangle[0]$} child { node[opacity=1] {12: $\langle$Byte$\rangle[1]$} child[opacity=1] { node[leaf] {13: $0x21$} } } } };
-    \end{tikzpicture}%
-  }
-  {\center \dttree}
