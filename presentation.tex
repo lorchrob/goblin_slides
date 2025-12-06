@@ -680,7 +680,7 @@ compute them after constraint solving\pause
         \item Handle \green{bit vector SMT constraints} not expressible in ISLa \pause
         \item 36x improvement in efficiency \pause
         \item Able to produce outputs for more than twice the number of grammars 
-        ($\sim$24,000 / $\sim$97000 up to $\sim$49,000 / $\sim$97,000)
+        (\blue{$\sim$24,000 / $\sim$97000} up to \blue{$\sim$49,000 / $\sim$97,000})
     \end{itemize}
     % Comparison w/ ISLa: XML, ScriptSize C, and CSV
     %   Main metric are __efficiency__ in inputs/minute and __diversity__ in k-path coverage (define)
@@ -702,8 +702,8 @@ compute them after constraint solving\pause
         \end{itemize} \pause
         \item More powerful type system (e.g., \green{polymorphism})\pause
         \item AI \green{abstraction/refinement} algorithms\pause
-        \item \green{Finite model finding} and \green{CLP} engines
-        \item \green{Divide and conquer/parallel} approaches
+        \item \green{Finite model finding} and \green{CLP} engines \pause
+        \item \green{Divide and conquer/parallel} approaches \pause
         \item CDCL-style \green{backjumping}
     \end{itemize}
     % e.g., CLP semantics
@@ -790,9 +790,28 @@ Every element of the second list is present in the first
 \end{frame}
 
 \begin{frame} 
-    \frametitle{Semantics}
-% Interpretation of term wrt DT
-% Satisfaction relation
+    \frametitle{Local constraints for grammar mutation}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Semantics: Intepretation function}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Semantics: Satisfaction relation}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Semantics: Denotation of $G$}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Search algorithm pseudocode}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Calculus}
+Can conceptualize as guarded rewrite rules on global state
 \end{frame}
 
 
