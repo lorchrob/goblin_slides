@@ -713,6 +713,7 @@ compute them after constraint solving\pause
 
 \begin{frame}
     \frametitle{Search algorithm}
+A \green{derivation tree} is an AST that may be \green{open} (or \green{closed})
 \end{frame}
 
 \begin{frame}
@@ -938,7 +939,7 @@ Can conceptualize as \green{guarded rewrite rules} on global state\\[4pt]
 Example rule expands a symbolic terminal
 
 \centering
-\begin{mathpar} 
+\blue{\begin{mathpar} 
   \inferrule*[left=NormalizeTA]
 % v is an open leaf in the derivation tree DT
 % label of v is associated with type annotation ta carrying semantic constraint set D
@@ -948,7 +949,7 @@ Example rule expands a symbolic terminal
 % add D to set of constraints C
 % still expand DT' so we know we already colelcted this constraint
   { \mathit{DT}' \gets \mathsf{expand}_G(\mathit{DT}, v, []) }
-\end{mathpar}
+\end{mathpar}}
 \end{frame}
 
 \begin{frame}
