@@ -33,6 +33,7 @@
 \setbeamercovered{invisible}  
 % Define a custom dark green color
 \definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
+\usetikzlibrary{trees,arrows.meta,matrix,positioning,calc,fit,shapes.geometric}
 \begin{document}
 \lstdefinelanguage{Goblin}{
   sensitive=true,
@@ -230,7 +231,7 @@ Termination? (Mostly) well-formed inputs?
         \item Supporting constraint solving over arbitrary SMT theories \pause
         \item And evaluated in the context of real fuzzing workflows \pause
         \end{itemize}
-        \item Given a context-sensitive grammar \blue{$G$}, find \blue{$x$} such that \blue{$x \in \mathcal{L}(G)$} \pause
+        \item Given a \green{context-sensitive grammar} \blue{$G$}, find \blue{$x$} such that \blue{$x \in \mathcal{L}(G)$} \pause
         \item What is a context-sensitive grammar? 
 \begin{lstlisting}[style=goblin]
 <xml-tree> ::= <openclose-tag> | 
@@ -252,16 +253,18 @@ Termination? (Mostly) well-formed inputs?
     \system{} is an \green{input generator}, but not a (complete) \green{fuzzer} \\[8pt]\pause
         \resizebox{\linewidth}{!}{
         {\scriptsize\begin{tikzpicture}[
-            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center}
+            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center},
+            data/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center}
             ]
  
             % Nodes with manual coordinates
-            \node[box] (inp) at (0,2) {Grammar/spec};
+            \node[data] (inp) at (0,2) {Grammar/spec};
             \node[box] (sys) at (2,2) {\system{}};
-            \node[box] (sutinp) at (4,2) {SUT input};
+            \node[data] (sutinp) at (4,2) {SUT input};
             \node[box] (dr) at (4,1) {Fuzzing driver};
             \node[box] (sut) at (6,1) {SUT};
-            \node[box] (sutout) at (6,0) {SUT output};
+            \node[data] (sutout) at (6,0) {SUT output};
 
             % Arrows
             \draw[->] (inp.east) -- (sys.west);
@@ -279,17 +282,19 @@ Termination? (Mostly) well-formed inputs?
     \system{} is an \green{input generator}, but not a (complete) \green{fuzzer} \\[8pt]
         \resizebox{\linewidth}{!}{
         {\scriptsize\begin{tikzpicture}[
-            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center}
+            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center},
+            data/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center}
             ]
  
             % Nodes with manual coordinates
-            \node[box] (inp) at (0,2) {Grammar/spec};
+            \node[data] (inp) at (0,2) {Grammar/spec};
             \node[box] (sys) at (2,2) {\system{}};
-            \node[box] (sutinp) at (4,2) {SUT input};
+            \node[data] (sutinp) at (4,2) {SUT input};
             \begin{scope}[opacity=0.25] 
             \node[box] (dr) at (4,1) {Fuzzing driver};
             \node[box] (sut) at (6,1) {SUT};
-            \node[box] (sutout) at (6,0) {SUT output};
+            \node[data] (sutout) at (6,0) {SUT output};
             \end{scope}
 
             % Arrows
@@ -430,12 +435,11 @@ with an \green{SMT engine}\\[4pt]
 @\color{darkred}<PAYLOAD>@ ::= @\color{teal}<F1>@ @\color{teal}<F2>@ @\color{darkred}<BYTES>@ 
 ...
 \end{lstlisting}\pause
-\green{Derived fields} with \texttt{<-} denote nonterminals that are directly computable, enforced syntactically \pause
+\green{Derived fields} with \blue{\scriptsize\texttt{<-}} denote nonterminals that are directly computable, enforced syntactically \pause
 
 Cryptographic hashes, checksums, or \green{any computable function}
 \end{frame}
 
-\usetikzlibrary{trees,arrows.meta,matrix,positioning,calc,fit,shapes.geometric}
 \tikzset{
   >=Latex,                             % nice arrowheads
   proc/.style = {draw, rounded corners, thick, fill=white, inner sep=6pt, minimum width=2cm, align=center},
@@ -475,7 +479,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
   }
   {\center \dttree} \pause 
 
-  \green{Not} a string {\scriptsize \texttt{0x0106020321}}
+  \green{Not} a string \blue{{\scriptsize \texttt{0x0106020321}}}
 % Grammar producing a string vs grammar producing an ADT term
 % In the ADT view, we model derivations in progress as derivation trees
 % Informally, the semantics of a Goblin input is the set of closed derivation trees 
@@ -494,6 +498,10 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame} 
     \frametitle{Semantics}
+    The \green{semantics} of a goblin input \blue{$G$} are the set of ASTs that 
+    respect $(i)$ \blue{$G$}'s context-free syntactic constraints and \blue{$G$}'s 
+    $(ii)$ context-sensitive semantic constraints \pause 
+
     \blue{$\mathcal{L}_{\mathsf{AST}}(G) = \{ t \mid $}
 \begin{enumerate}
     \item \blue{$t$} is rooted at the start symbol\pause
@@ -572,9 +580,11 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame} 
     \frametitle{\system{} Workflow}
-    How does \system{} find \blue{$t$} such that \blue{$t \in \mathcal{L}_{\textsf{AST}}(G)$}?\pause
+    How does \system{} find \blue{$t$} such that \blue{$t \in \mathcal{L}_{\textsf{AST}}(G)$}?\\[4pt]\pause
+
+    General workflow:\pause
     \begin{enumerate}
-        \item \green{Context-free wellformedness} and other syntax checks\pause
+        \item \green{Context-free wellformedness} and other syntactic checks\pause
         \item Type checking\pause
         \item Desugar refinement types\pause
         \item Disambiguate constraints \pause
@@ -589,12 +599,12 @@ Cryptographic hashes, checksums, or \green{any computable function}
 \begin{frame}[fragile]
     \frametitle{Context-Free Wellformedness}
     \begin{itemize}
-        \item \green{Context-free language emptiness} is a modeling issue, stemming from 
+        \item \green{Context-free language emptiness} (e.g., \blue{$S \rightarrow S$}) is a modeling issue, stemming from 
         \green{non-wellfounded recursion} \pause
         \item We perform a more general check called \green{context-free wellformedness}\pause
-        \item[1.]  Iteratively expand a set \blue{$S$} of nonterminals known to be able to produce finite derivations 
+        \item[1.]  Iteratively expand a set \blue{$N$} of nonterminals known to be able to produce finite derivations 
         until reaching a fixpoint\pause
-        \item[2.] Check every reachable nonterminal is in \blue{$S$}\pause
+        \item[2.] Check every reachable nonterminal is in \blue{$N$}\pause
     \end{itemize}
 \begin{lstlisting}[style=goblin]
 @\color{darkred}<SAE\_PACKET>@ ::= @\color{darkred}<COMMIT>@ | @\color{darkred}<CONFIRM>@;
@@ -606,12 +616,36 @@ Cryptographic hashes, checksums, or \green{any computable function}
 \end{frame}
 
 \begin{frame}
-    \frametitle{Abstract Derived Fields}
-    Derived fields {\scriptsize \texttt{<F> <- expr}} must be computable \green{without constraint solving}
+    \frametitle{Derived Field Checks}
+    Derived fields \blue{$\langle F \rangle \leftarrow e$} must be computable \green{without constraint solving}\pause
     \begin{itemize}
-        \item[1.] Disallow \green{cyclic dependencies}
-        \item[2.] Disallow derived fields in semantic constraints
+        \item[1.] Disallow \green{cyclic dependencies} (e.g. \blue{$\langle A \rangle \rightarrow T[\langle B\rangle], \langle B\rangle \rightarrow T[\langle A\rangle]$})\pause
+        \begin{itemize}
+            \item[$(i)$] Build a directed graph for each prod rule\pause
+            \item[$(ii)$] Include vertex for each RHS nonterminal/symbolic terminal\pause
+            \item[$(iii)$] Check for cycles\pause
+        \end{itemize}
+        \item[2.] Disallow derived fields in semantic constraints\pause
+        \begin{itemize}
+            \item E.g., \blue{$\langle D \rangle > 0$} where \blue{$\langle D \rangle$} is derived
+        \end{itemize}
     \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Abstract derived fields}
+We remove derived fields from $G$ before the main search; 
+compute them after constraint solving\pause
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@
+  { @\color{teal}<AUX>@ <- @\color{darkred}<PAYLOAD>@.@\color{teal}<F1>@ bvmul @\color{darkred}<PAYLOAD>@.@\color{teal}<F2>@;
+...
+\end{lstlisting}
+\blue{$\leadsto$}
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ dep_sym_leaf @\color{darkred}<PAYLOAD>@
+  { ...
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}
@@ -633,8 +667,8 @@ Cryptographic hashes, checksums, or \green{any computable function}
         \item XML, ScriptSize C, and CSV input generation \pause
         \item Matching tags, definition before use, and column count\pause
         \item Measure \green{efficiency} in inputs generated per minute and \green{diversity}
-        in \green{k-path coverage} for $k=3$ (percentage of paths of length $3$ traversed through the grammar)\pause
-        \item Outperform prior work by $\sim$$10-100\%$ in all metrics, save for efficiency of CSV inputs
+        in \green{k-path coverage} for \blue{$k=3$} (percentage of paths of length $3$ traversed through the grammar)\pause
+        \item Outperform prior work by \blue{$\sim$$10-100\%$} in all metrics, save for efficiency of CSV inputs
     \end{itemize}
 \end{frame}
 
@@ -642,8 +676,8 @@ Cryptographic hashes, checksums, or \green{any computable function}
     \frametitle{Evaluation}
     Case study 4\pause
     \begin{itemize}
-        \item SAECRED input generation (SyGuS engine; \system{} predecessor) \pause
-        \item Handle bit vector SMT constraints not expressible in ISLa \pause
+        \item WiFi SAE packet input generation (SAECRED's SyGuS engine; \system{} predecessor) \pause
+        \item Handle \green{bit vector SMT constraints} not expressible in ISLa \pause
         \item 36x improvement in efficiency \pause
         \item Able to produce outputs for more than twice the number of grammars 
         ($\sim$24,000 / $\sim$97000 up to $\sim$49,000 / $\sim$97,000)
@@ -660,18 +694,82 @@ Cryptographic hashes, checksums, or \green{any computable function}
 \begin{frame}
     \frametitle{Discussion and future work}
     \begin{itemize}
-        \item User-facing language (attribute grammars, built-ins like {\scriptsize\texttt{length(.)}})\pause
-        \item More powerful type system (e.g., polymorphism)\pause
-        \item AI abstraction/refinement algorithms\pause
-        \item CDCL-style backjumping
+        \item User-facing language 
+        \begin{itemize} 
+        \item \green{Synthesized} and \green{inherited attributes}
+        \item User-defined \green{recursive functions} 
+        \item Built-ins like \blue{{\scriptsize\texttt{length(.)}}}
+        \end{itemize} \pause
+        \item More powerful type system (e.g., \green{polymorphism})\pause
+        \item AI \green{abstraction/refinement} algorithms\pause
+        \item \green{Finite model finding} and \green{CLP} engines
+        \item \green{Divide and conquer/parallel} approaches
+        \item CDCL-style \green{backjumping}
     \end{itemize}
     % e.g., CLP semantics
 \end{frame}
 
+\begin{frame}
+\center 
+{\huge Thanks! Questions?}\\[12pt]
+
+robert-lorch@uiowa.edu
+
+\texttt{github.com/lorchrob/goblin}
+\end{frame}
+
 %%% End of presentation
+
+\begin{frame}[fragile]
+Every element of the second list is present in the first
+    \frametitle{Structural constraints}
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<S>@ ::= @\color{darkred}<L1> <L2>@
+      { @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@; };
+@\color{darkred}<L1>@ ::= @\color{teal}<\_defs\_up> <str>@ @\color{darkred}<L1>@
+       { @\color{teal}<\_defs\_up>@ = set.union(set.singleton(@\color{teal}<str>@), 
+                                @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@); }
+       | @\color{teal}<\_defs\_up>@ @\color{darkred}<str>@
+       { @\color{teal}<\_defs\_up>@ = set.singleton(@\color{teal}<str>@); };
+@\color{darkred}<L2>@ ::= @\color{teal}<\_defs\_down> <str>@ @\color{darkred}<L2>@ 
+       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@); 
+         @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{teal}<\_defs\_down>@; }
+       | @\color{teal}<\_defs\_down> <str>@
+       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@); };
+@\color{teal}<str>@ :: String;
+@\color{teal}<\_defs\_down>@ :: Set(String); 
+@\color{teal}<\_defs\_up>@ :: Set(String);
+\end{lstlisting}
+\end{frame}
 
 \begin{frame} 
     \frametitle{Prior Work} 
+    \begin{itemize}
+        \item ISLa, most similar in spirit 
+        \begin{itemize}
+            \item Only natively supports string constraints
+            \item Global constraints not amenable to \green{grammar mutations}
+        \end{itemize}
+        \item Fandango
+    \begin{itemize}
+        \item Uses  \green{genetic algorithms} with built-in fitness functions
+        \item Constraints may be \green{non-monotonic} (no monotonically decreasing notion of distance for constraint satisfaction)
+        \item Times out for simple examples (equality, set membership)
+        \item Times out with SAECRED grammars
+    \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame} 
+    \frametitle{Related Work} 
+    \begin{itemize}
+        \item Parser generator libraries (e.g. ANTLR, yacc) handle context sensitivity 
+        but are for \green{parsing} rather than generation
+        \item Attribute grammars handle context sensitivity but work focuses on \green{parsing} and theoretical results
+        \item Property-based testing does not support \green{general context-sensitive constraints} over inputs
+        \item SyGuS does not natively support \green{constraints over non-top-level nonterminals} 
+    \end{itemize}
+    
     % Why build a new input generation tool? How do we position ourselves compared to prior work?
     % There are two prior works that target the same question
     % First, ISLa:
@@ -695,18 +793,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
     \frametitle{Semantics}
 % Interpretation of term wrt DT
 % Satisfaction relation
-% Semantics of a Goblin input
 \end{frame}
-
-\begin{frame}
-    \frametitle{Structural constraints}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Other related work}
-    % SyGuS, CLP, PBT, attribute grammars, context-sensitive parsing
-\end{frame}
-
 
 
 \end{document}

@@ -1,16 +1,19 @@
-\frametitle{Context-Free Wellformedness}
-    \begin{itemize}
-        \item \green{Context-free language emptiness} is a modeling issue, stemming from
-        \green{non-wellfounded recursion} \pause
-        \item We perform a more general check called \green{context-free wellformedness}\pause
-        \item[1.]  Iteratively expand a set \blue{$S$} of nonterminals known to be able to produce finite derivations
-        until reaching a fixpoint\pause
-        \item[2.] Check every reachable nonterminal is in \blue{$S$}\pause
-    \end{itemize}
+Every element of the second list is present in the first
+    \frametitle{Structural constraints}
 \begin{lstlisting}[style=goblin]
-@\color{darkred}<SAE\_PACKET>@ ::= @\color{darkred}<COMMIT>@ | @\color{darkred}<CONFIRM>@;
-@\color{darkred}<COMMIT>@ ::= @\color{teal}<FIELD>@ @\color{darkred}<RG\_ID\_LIST>@;
-@\highlight@@\color{darkred}<RG\_ID\_LIST>@ ::= @\color{teal}<RG\_ID>@ @\color{darkred}<RG\_ID\_LIST>@;
-@\color{darkred}<CONFIRM>@ ::= @\color{teal}<FIELD1> <FIELD2>@;
-...
+@\color{darkred}<S>@ ::= @\color{darkred}<L1> <L2>@
+      { @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@; };
+@\color{darkred}<L1>@ ::= @\color{teal}<\_defs\_up> <str>@ @\color{darkred}<L1>@
+       { @\color{teal}<\_defs\_up>@ = set.union(set.singleton(@\color{teal}<str>@),
+                                @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@); }
+       | @\color{teal}<\_defs\_up>@ @\color{darkred}<str>@
+       { @\color{teal}<\_defs\_up>@ = set.singleton(@\color{teal}<str>@); };
+@\color{darkred}<L2>@ ::= @\color{teal}<\_defs\_down> <str>@ @\color{darkred}<L2>@
+       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@);
+         @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{teal}<\_defs\_down>@; }
+       | @\color{teal}<\_defs\_down> <str>@
+       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@); };
+@\color{teal}<str>@ :: String;
+@\color{teal}<\_defs\_down>@ :: Set(String);
+@\color{teal}<\_defs\_up>@ :: Set(String);
 \end{lstlisting}
