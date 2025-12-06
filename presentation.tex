@@ -1,10 +1,13 @@
 \documentclass[11pt,xcolor={dvipsnames},hyperref={pdftex,pdfpagemode=UseNone,hidelinks,pdfdisplaydoctitle=true},usepdftitle=false]{beamer}
 \usepackage{presentation}
+\usepackage{stmaryrd}
 
 \hypersetup{pdftitle={Augmenting Model-Based Instantiation with Fast Enumeration}}
 \newcommand\sym[1]{\mathsf{#1}}
 \newcommand\ty[1]{\mathit{#1}}
+\newcommand{\nt}[1]{\langle \mathsf{#1} \rangle}
 
+\newcommand{\func}[1]{\ensuremath{\mathtt{#1}}\xspace}
 \newcommand{\pt}{\phantom{0}}
 \newcommand{\ptt}{\phantom{0}\phantom{0}}
 \newcommand{\pttt}{\phantom{0}\phantom{0}\phantom{0}}
@@ -22,18 +25,78 @@
 
 \newrobustcmd\B{\DeclareFontSeriesDefault[rm]{bf}{b}\bfseries} 
 \usepackage{siunitx}
+\usepackage{mathpartir} 
 \usepackage{mdframed}
-\usepackage{algorithmicx}
-\usepackage{algpseudocode}
+% \usepackage{algorithmicx}
+% \usepackage{algpseudocode}
+% \usepackage{algorithm}
+% \usepackage[noend]{algorithmic}
+\usepackage{algorithm}
+\usepackage[noend]{algorithmic}
 \usepackage[normalem]{ulem}
 \usepackage{xcolor}
 \usepackage{tikz}
 \usepackage{listings}
+\usepackage{xspace}
 \newcommand{\code}[1]{{\footnotesize\texttt{#1}}}
 \setbeamercovered{invisible}  
 % Define a custom dark green color
 \definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
 \usetikzlibrary{trees,arrows.meta,matrix,positioning,calc,fit,shapes.geometric}
+\lstdefinelanguage{plain}{
+  sensitive=true,
+  % morekeywords=[1]{int_to_bv,length,mod,seq,len,set,singleton,union,member},
+  % morekeywords=[2]{BitVec,Int,Bool,List,Set,String},
+  % morekeywords=[3]{bvand,bvor,bvxor,bvnot,and,or,not,bvplus,bvugt,bvult,bvmul}
+}
+
+\lstdefinestyle{plain}{
+  language=plain,
+  basicstyle=\ttfamily\scriptsize,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=2.2em,
+  linewidth=.97\columnwidth,
+  stepnumber=1,
+  frame=single,
+  % framesep=4pt,
+  showstringspaces=false,
+  breaklines=true,
+  tabsize=2,
+  columns=fullflexible,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{red!70!black}, 
+  % keywordstyle=[1]\color{blue},
+  % keywordstyle=[2]\color{teal}\bfseries, 
+  % keywordstyle=[3]\color{purple}\bfseries,
+  keepspaces,
+  escapeinside={@}{@},
+  % moredelim=[is][\color{anglemark}\bfseries]{<}{>},
+literate=% 
+%     {0}{{{\color{darkred}0}}}1
+%     {0b}{{{\color{darkred}0b}}}1
+%     {1}{{{\color{darkred}1}}}1
+%     {2}{{{\color{darkred}2}}}1
+%     {3}{{{\color{darkred}3}}}1
+%     {4}{{{\color{darkred}4}}}1
+%     {5}{{{\color{darkred}5}}}1
+%     {6}{{{\color{darkred}6}}}1
+%     {7}{{{\color{darkred}7}}}1
+%     {8}{{{\color{darkred}8}}}1
+%     {9}{{{\color{darkred}9}}}1
+%     % {.}{{{\color{blue}.}}}1
+    {-->}{{{$\leadsto$}}}1
+%     % {::}{{{\color{black}\bfseries ::}}}3%
+%     % {=}{{{\color{black}\bfseries =}}}3%
+%     % {<-}{{{\color{black}\bfseries <-}}}3%
+%     % {+}{{{\color{black}\bfseries +}}}3%
+%     % {|}{{{\color{black}\bfseries |}}}3%
+%     % {;}{{{\color{black}\bfseries ;}}}3%
+%     % {\{}{{{\color{black}\bfseries \{}}}3%
+%     % {\}}{{{\color{black}\bfseries \}}}}3%
+%     % {<}{{{\color{green}\bfseries <}}}3%
+}
+\algsetup{linenosize=\tiny}
 \begin{document}
 \lstdefinelanguage{Goblin}{
   sensitive=true,
@@ -789,29 +852,147 @@ Every element of the second list is present in the first
     % * Killed by simple examples (give examples)
 \end{frame}
 
-\begin{frame} 
+\begin{frame}[fragile]
     \frametitle{Local constraints for grammar mutation}
+\begin{itemize}
+    \item \green{Crossover mutation} swapping {\scriptsize\texttt{GROUP\_ID}} and {\scriptsize\texttt{RG\_LIST}}
+    \item \green{Local constraints} are easier to maintain
+\end{itemize}
+
+\begin{lstlisting}[style=plain]
+COMMIT ::= SEQ GROUP_ID SCALAR
+  { GROUP_ID is equal to 13  and  SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY RG_LIST
+  { RG_LENGTH is the length of RG_LIST }
+...
+-->
+COMMIT ::= SEQ RG_LIST SCALAR
+  { SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY GROUP_ID
+  { GROUP_ID is equal to 13 }
+...
+\end{lstlisting}
 \end{frame}
 
-\begin{frame} 
-    \frametitle{Semantics: Intepretation function}
+\begin{frame}
+    \frametitle{Semantics: Interpretation function}
+Interpretation function \blue{$\mathcal{I}_{\mathit{tr}}(t)$} outputs denotation 
+of term \blue{$t$} in AST \blue{\emph{tr}} \\[4pt]
+
+\blue{$\mathcal{I}_{tr}$} also maps function and predicate symbols 
+to their fixed interpretations\\[4pt]
+
+\blue{{\small\noindent$
+\begin{array}{ll} 
+&\mathcal{I}_{tr}(f(t_1, \dots, t_n)) = \top \text{ if some } \mathcal{I}_{tr}(t_i) = \top  \\
+&\mathcal{I}_{tr}(f(t_1, \dots, t_n)) = \mathcal{I}_{tr}(f)(\mathcal{I}_{tr}(t_1), \dots, \mathcal{I}_{tr}(t_n)) \\
+&\mathcal{I}_{tr}(\nt{nt}[i].\nt{nt\_expr}) = \mathcal{I}_{tr'}(\nt{nt\_expr}) \text{ for } \mathit{tr}' \text{ rooted at the only } \\
+    &\;\;\;\;\;\;v \in \mathsf{get\_children(\mathit{tr}, root(}\mathit{tr})) \text{ such that } \ell(v) = \nt{nt}[i] \\
+    &\dots
+\end{array}
+$}}
 \end{frame}
 
 \begin{frame} 
     \frametitle{Semantics: Satisfaction relation}
+Satisfaction relation \blue{$\models_{\mathcal{G}}$} captures whether or not a given constraint in \blue{$G$}
+is satisfied by a given AST\\[4pt]
+
+\blue{
+  \(
+\begin{array}{l}
+    \mathit{tr} \models_{\mathcal{G}} \varphi \text{ if } \mathcal{I}_{\mathit{tr}}(t_i) = \top \text{ for some subterm } t_i \text{ of } \varphi \text{; otherwise,} \\
+    \mathit{tr} \models_{\mathcal{G}} p(t_1, \dots, t_n) \text{ if } (\mathcal{I}_{tr}(t_1), \dots, \mathcal{I}_{tr}(t_n)) \in \mathcal{I}_{tr}(p) \\
+    \mathit{tr} \models_{\mathcal{G}} \neg \varphi \text{ if } \mathit{tr} \not\models_{\mathcal{G}} \varphi \\
+    \mathit{tr} \models_{\mathcal{G}} \varphi_1 \land \varphi_2 \text{ if } \mathit{tr} \models_{\mathcal{G}} \varphi_1 \text{ and } \mathit{tr} \models_{\mathcal{G}} \varphi_2 \\
+    \mathit{tr} \models_{\mathcal{G}} \varphi_1 \lor \varphi_2 \text{ if } \mathit{tr} \models_{\mathcal{G}} \varphi_1 \text{ or } \mathit{tr} \models_{\mathcal{G}} \varphi_2 \\
+    \mathit{tr} \models_{\mathcal{G}} \varphi_1 \Rightarrow \varphi_2 \text{ if } \mathit{tr} \not\models_{\mathcal{G}} \varphi_1 \text{ or } \mathit{tr} \models_{\mathcal{G}} \varphi_2 \\
+\end{array}
+\)}
 \end{frame}
 
 \begin{frame} 
     \frametitle{Semantics: Denotation of $G$}
+Semantics of a \system{} input \blue{$G$} is the set of syntactically valid ASTs 
+which satisfy all the constraints
+
+\blue{
+{\small
+\begin{align*}
+\llbracket G \rrbracket = 
+    \{ t \mid \; &t \in \mathcal{L}_{\mathsf{AST}}(G) \land \forall (\textsf{nt}, \_, \textsf{constraints}) \in R.\; \\[-1ex]
+              &\forall s \in \textsf{get\_subtrees}(t, \textsf{nt}). \; 
+              \forall \varphi \in \textsf{constraints}. \; 
+              \mathit{s} \models_{\mathcal{G}} \textsf{resolve}(\varphi)    
+    \}  
+\end{align*}
+}}
 \end{frame}
 
-\begin{frame} 
-    \frametitle{Search algorithm pseudocode}
-\end{frame}
+
 
 \begin{frame} 
     \frametitle{Calculus}
-Can conceptualize as guarded rewrite rules on global state
+Can conceptualize as \green{guarded rewrite rules} on global state\\[4pt]
+
+Example rule expands a symbolic terminal
+
+\centering
+\begin{mathpar} 
+  \inferrule*[left=NormalizeTA]
+% v is an open leaf in the derivation tree DT
+% label of v is associated with type annotation ta carrying semantic constraint set D
+  { v \in \mathsf{open\_leaves}(DT) \quad 
+    \mathsf{depth}(\mathit{DT}) \leq L \quad 
+    \ell(v), \tau \in \Gamma }
+% add D to set of constraints C
+% still expand DT' so we know we already colelcted this constraint
+  { \mathit{DT}' \gets \mathsf{expand}_G(\mathit{DT}, v, []) }
+\end{mathpar}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Search algorithm pseudocode}
+    
+  {\tiny
+  \begin{algorithmic}[1]
+    \raggedright
+    \STATE $\texttt{initializeGlobalState}()$
+    % \STATE $\func{push}(\mathsf{decisionStack}, \mathtt{stNode})$
+      \WHILE{$\lnot \func{allLeavesClosed}(\mathit{dt})$}
+        \IF{\text{there is more than one unvisited expansion}}
+          \STATE $\textsc{Decide}$
+        \ELSE
+          \STATE $\textsc{Propagate}$
+        \ENDIF
+
+        \WHILE{$\lnot \mathsf{is\_normalized}(\mathit{dt})$}
+          \STATE $\textsc{NormalizePr}$ \text{ (if applicable)}
+          \STATE $\textsc{NormalizeTa}$ \text{ (if applicable)}
+        \ENDWHILE
+
+        \IF{\textnormal{current search depth } d > \textnormal{depth limit } L}
+          \IF{$\mathsf{assertionLevel} = 1$}
+            \STATE $\textsc{RestartDepth}$
+          \ELSE
+            \STATE $\textsc{BacktrackDepth}$
+          \ENDIF
+        \ELSE
+          \FORALL{$c \in \textnormal{constraint set } C$}
+            \STATE \textsc{Assert} \text{ if } c \text{ is applicable}
+          \ENDFOR
+          \IF{$\func{smt\_check\_sat}() = \mathsf{UNSAT}$}
+            \IF{$\mathsf{assertionLevel} = 1 \land \lnot \mathit{bd?}$}
+              \STATE $\textsc{Fail}$
+            \ELSIF{$\mathsf{assertionLevel} = 1$}
+              \STATE $\textsc{RestartUnsat}$
+            \ELSE
+              \STATE $\textsc{BacktrackUnsat}$
+            \ENDIF
+          \ENDIF
+        \ENDIF
+      \ENDWHILE
+  \end{algorithmic}}
 \end{frame}
 
 

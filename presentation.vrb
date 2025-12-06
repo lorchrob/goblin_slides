@@ -1,19 +1,19 @@
-Every element of the second list is present in the first
-    \frametitle{Structural constraints}
-\begin{lstlisting}[style=goblin]
-@\color{darkred}<S>@ ::= @\color{darkred}<L1> <L2>@
-      { @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@; };
-@\color{darkred}<L1>@ ::= @\color{teal}<\_defs\_up> <str>@ @\color{darkred}<L1>@
-       { @\color{teal}<\_defs\_up>@ = set.union(set.singleton(@\color{teal}<str>@),
-                                @\color{darkred}<L1>@.@\color{teal}<\_defs\_up>@); }
-       | @\color{teal}<\_defs\_up>@ @\color{darkred}<str>@
-       { @\color{teal}<\_defs\_up>@ = set.singleton(@\color{teal}<str>@); };
-@\color{darkred}<L2>@ ::= @\color{teal}<\_defs\_down> <str>@ @\color{darkred}<L2>@
-       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@);
-         @\color{darkred}<L2>@.@\color{teal}<\_defs\_down>@ = @\color{teal}<\_defs\_down>@; }
-       | @\color{teal}<\_defs\_down> <str>@
-       { set.member(@\color{teal}<str>@, @\color{teal}<\_defs\_down>@); };
-@\color{teal}<str>@ :: String;
-@\color{teal}<\_defs\_down>@ :: Set(String);
-@\color{teal}<\_defs\_up>@ :: Set(String);
+\frametitle{Local constraints for grammar mutation}
+\begin{itemize}
+    \item \green{Crossover mutation} swapping {\scriptsize\texttt{GROUP\_ID}} and {\scriptsize\texttt{RG\_LIST}}
+    \item \green{Local constraints} are easier to maintain
+\end{itemize}
+
+\begin{lstlisting}[style=plain]
+COMMIT ::= SEQ GROUP_ID SCALAR
+  { GROUP_ID is equal to 13  and  SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY RG_LIST
+  { RG_LENGTH is the length of RG_LIST }
+...
+-->
+COMMIT ::= SEQ RG_LIST SCALAR
+  { SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY GROUP_ID
+  { GROUP_ID is equal to 13 }
+...
 \end{lstlisting}
