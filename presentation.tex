@@ -607,6 +607,11 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame}
     \frametitle{Abstract Derived Fields}
+    Derived fields {\scriptsize \texttt{<F> <- expr}} must be computable \green{without constraint solving}
+    \begin{itemize}
+        \item[1.] Disallow \green{cyclic dependencies}
+        \item[2.] Disallow derived fields in semantic constraints
+    \end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -615,8 +620,10 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame}
     \frametitle{Formal guarantees}
-    In the paper, we prove \green{solution soundness}, \green{refutation soundness}, 
-    and \green{solution completeness}
+    In the paper, we formalize the \system{} search procedure as a calculus comprised of 11 inference rules \\[8pt] \pause
+
+    We prove the calculus satisfies \green{solution soundness}, \green{refutation soundness}, 
+    and \green{solution completeness}     
 \end{frame}
 
 \begin{frame}
