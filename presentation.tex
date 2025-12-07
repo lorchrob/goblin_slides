@@ -735,13 +735,13 @@ compute them after constraint solving\pause
 
 \begin{frame}[fragile]
     \frametitle{Search Algorithm: Main Concepts}
-Start with \green{context-free case}
+Start with \green{context-free case} \pause
 
-A \green{derivation tree} is an AST that may be \green{open} (or \green{closed})
+A \green{derivation tree} is an AST that may be \green{open} (or \green{closed})\pause
 \begin{enumerate}
 \item Build candidate \blue{$\mathit{dt}$} via random walk until closed
 \item Then instantiate with concrete values 
-\end{enumerate}
+\end{enumerate}\pause
 
 
  % --- helper: two derivation trees of different heights ---
@@ -886,7 +886,7 @@ Decisions are recorded in a \green{decision stack} \blue{$ds = [dt_1, dt_2]$}
 
 \begin{frame}[fragile]
     \frametitle{Search Algorithm: Main Concepts}
-Some ``decisions'' are \green{forced}: symbolic terminals and 
+Some ``decisions'' are \green{forced} (see solid arrows): symbolic terminals and 
 nonterminals with exactly one production rule option
 
 These are called \green{normalization steps} and are not stored in \blue{$ds$}
@@ -1059,7 +1059,7 @@ Record visited expansions and do not revisit
       \item Push an assertion frame at every decision\pause
       \item At each decision, {\scriptsize\blue{\texttt{assert}}} all constraints associated with the expanded \blue{$dt$} node and call {\scriptsize\blue{\texttt{check-sat}}}\pause
       \item Backtrack and pop an assertion level if {\scriptsize\blue{\texttt{check-sat}}} yields \blue{\textsc{Unsat}}\pause
-      \item Do not commit to concrete values; call {\scriptsize\blue{\texttt{get-model}}} once \blue{$dt$} is closed
+      \item Do not commit to concrete values; call {\scriptsize\blue{\texttt{get-model}}} once \blue{$dt$} is closed; then instantiate
     \end{enumerate}
 \end{frame}
 
