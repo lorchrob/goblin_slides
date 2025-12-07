@@ -42,7 +42,7 @@
 \setbeamercovered{invisible}  
 % Define a custom dark green color
 \definecolor{darkgreen}{rgb}{0.0, 0.5, 0.0}
-\usetikzlibrary{trees,arrows.meta,matrix,positioning,calc,fit,shapes.geometric}
+\usetikzlibrary{trees,arrows.meta,matrix,positioning,calc,fit,shapes.geometric,fit}
 \lstdefinelanguage{plain}{
   sensitive=true,
   % morekeywords=[1]{int_to_bv,length,mod,seq,len,set,singleton,union,member},
@@ -325,18 +325,18 @@ Termination? (Mostly) well-formed inputs?
             \node[data] (inp) at (0,2) {Grammar/spec};
             \node[box] (sys) at (2,2) {\system{}};
             \node[data] (sutinp) at (4,2) {SUT input};
-            \node[box] (dr) at (4,1) {Fuzzing driver};
-            \node[box] (sut) at (6,1) {SUT};
-            \node[data] (sutout) at (6,0) {SUT output};
+            \node[box][opacity=.5] (dr) at (4,1) {Fuzzing driver};
+            \node[box][opacity=.5] (sut) at (6,1) {SUT};
+            \node[data][opacity=.5] (sutout) at (6,0) {SUT output};
 
             % Arrows
             \draw[->] (inp.east) -- (sys.west);
             \draw[->] (sys.east) -- (sutinp.west);
-            \draw[->] (sutinp.south) -- (dr.north);
-            \draw[->] (dr.east) -- (sut.west);
-            \draw[->] (dr.west) -| (sys.south);
-            \draw[->] (sut.south) -- (sutout.north);
-            \draw[->] (sutout.west) -| (dr.south);
+            \draw[->][opacity=.5] (sutinp.south) -- (dr.north);
+            \draw[->][opacity=.5] (dr.east) -- (sut.west);
+            \draw[->][opacity=.5] (dr.west) -| (sys.south);
+            \draw[->][opacity=.5] (sut.south) -- (sutout.north);
+            \draw[->][opacity=.5] (sutout.west) -| (dr.south);
         \end{tikzpicture}}}
 \end{frame}
 
@@ -354,26 +354,48 @@ Termination? (Mostly) well-formed inputs?
             \node[data] (inp) at (0,2) {Grammar/spec};
             \node[box] (sys) at (2,2) {\system{}};
             \node[data] (sutinp) at (4,2) {SUT input};
-            \begin{scope}[opacity=0.25] 
             \node[box] (dr) at (4,1) {Fuzzing driver};
             \node[box] (sut) at (6,1) {SUT};
-            \node[data] (sutout) at (6,0) {SUT output};
-            \end{scope}
+            \node[data][opacity=.5] (sutout) at (6,0) {SUT output};
 
             % Arrows
             \draw[->] (inp.east) -- (sys.west);
             \draw[->] (sys.east) -- (sutinp.west);
-            \begin{scope}[opacity=0.25] 
+            \draw[->] (sutinp.south) -- (dr.north);
+            \draw[->] (dr.east) -- (sut.west);
+            \draw[->][opacity=.5] (dr.west) -| (sys.south);
+            \draw[->][opacity=.5] (sut.south) -- (sutout.north);
+            \draw[->][opacity=.5] (sutout.west) -| (dr.south);
+        \end{tikzpicture}}}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Input generation vs fuzzing} 
+    \system{} is an \green{input generator}, but not a (complete) \green{fuzzer} \\[8pt]
+        \resizebox{\linewidth}{!}{
+        {\scriptsize\begin{tikzpicture}[
+            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center},
+            data/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center}
+            ]
+ 
+            % Nodes with manual coordinates
+            \node[data] (inp) at (0,2) {Grammar/spec};
+            \node[box] (sys) at (2,2) {\system{}};
+            \node[data] (sutinp) at (4,2) {SUT input};
+            \node[box] (dr) at (4,1) {Fuzzing driver};
+            \node[box] (sut) at (6,1) {SUT};
+            \node[data] (sutout) at (6,0) {SUT output};
+
+            % Arrows
+            \draw[->] (inp.east) -- (sys.west);
+            \draw[->] (sys.east) -- (sutinp.west);
             \draw[->] (sutinp.south) -- (dr.north);
             \draw[->] (dr.east) -- (sut.west);
             \draw[->] (dr.west) -| (sys.south);
             \draw[->] (sut.south) -- (sutout.north);
             \draw[->] (sutout.west) -| (dr.south);
-            \end{scope}
         \end{tikzpicture}}}
-
-        % \item Example: SAECRED (overlay workflow with SAECRED components)
-        From now on we only discuss \green{input generation}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -711,10 +733,457 @@ compute them after constraint solving\pause
 \end{lstlisting}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Search algorithm}
+\begin{frame}[fragile]
+    \frametitle{Search Algorithm: Main Concepts}
+Start with \green{context-free case}
+
 A \green{derivation tree} is an AST that may be \green{open} (or \green{closed})
+\begin{enumerate}
+\item Build candidate \blue{$\mathit{dt}$} via random walk until closed
+\item Then instantiate with concrete values 
+\end{enumerate}
+
+
+ % --- helper: two derivation trees of different heights ---
+\newcommand{\dttree}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    level 1/.style={sibling distance=25mm},
+    level 2/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} }};
+  \end{tikzpicture}%
+}
+
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
+          % shift children of Bytes down to elongate arrows
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            % this edge stays solid 
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      };
+  \end{tikzpicture}%
+}
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c c}
+    \dttree & $\leadsto$ & \dttreee \\ 
+    \blue{$dt_1$} & & \blue{$dt_2$}
+  \end{tabular}
+}
+}
+\end{center}
 \end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Search Algorithm: Main Concepts}
+Choosing an expansion is called a \green{decision}
+
+Decisions are recorded in a \green{decision stack} \blue{$ds = [dt_1, dt_2]$}
+
+ % --- helper: two derivation trees of different heights ---
+\newcommand{\dttree}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    level 1/.style={sibling distance=25mm},
+    level 2/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} }};
+  \end{tikzpicture}%
+}
+
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
+          % shift children of Bytes down to elongate arrows
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            % this edge stays solid 
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      };
+  \end{tikzpicture}%
+}
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c c}
+    \dttree & $\leadsto$ & \dttreee \\ 
+    \blue{$dt_1$} & & \blue{$dt_2$}
+  \end{tabular}
+}
+}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Search Algorithm: Main Concepts}
+Some ``decisions'' are \green{forced}: symbolic terminals and 
+nonterminals with exactly one production rule option
+
+These are called \green{normalization steps} and are not stored in \blue{$ds$}
+
+
+ % --- helper: two derivation trees of different heights ---
+\newcommand{\dttree}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    level 1/.style={sibling distance=25mm},
+    level 2/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} }};
+  \end{tikzpicture}%
+}
+
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
+          % shift children of Bytes down to elongate arrows
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            % this edge stays solid 
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      };
+  \end{tikzpicture}%
+}
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c c}
+    \dttree & $\leadsto$ & \dttreee \\ 
+    \blue{$dt_1$} & & \blue{$dt_2$}
+  \end{tabular}
+}
+}
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Search Algorithm: Main Concepts}
+\green{Termination} is not guaranteed
+
+Pick a \green{depth limit} \blue{$L$} and associate a \green{search depth} with each \blue{$dt$}
+
+\green{Backtrack} once \blue{$L$} is exceeded by popping \blue{$ds$}
+
+Record visited expansions and do not revisit
+
+\green{Restart} and increment \blue{$L$} if backtracking and \blue{$ds = []$}
+
+ % --- helper: two derivation trees of different heights ---
+\newcommand{\dttree}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    level 1/.style={sibling distance=25mm},
+    level 2/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} }};
+  \end{tikzpicture}%
+}
+
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
+          % shift children of Bytes down to elongate arrows
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            % this edge stays solid 
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      };
+  \end{tikzpicture}%
+}
+
+\begin{center}
+\resizebox{\textwidth}{!}{%
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c c}
+    \dttree & $\leadsto$ & \dttreee 
+  \end{tabular}
+}
+}
+\end{center}
+\end{frame}
+
+\begin{frame} \frametitle{Search Algorithm: Main Concepts}
+    How to extend the context-free algorithm to handle constraints?\\[4pt]\pause
+    
+    Insight: use an \green{incremental SMT} backend\\[4pt]\pause
+
+    Solver interface\pause
+    \begin{itemize} 
+      \item {\scriptsize\blue{\texttt{(assert c)}}}: assert a constraint\pause
+      \item {\scriptsize\blue{\texttt{(push 1)}}}: push an assertion level\pause
+      \item {\scriptsize\blue{\texttt{(pop 1)}}}: undo assertions in last assertion level (backtrack)\pause
+      \item {\scriptsize\blue{\texttt{(check-sat)}}}: check if conjunction of active assertions is \blue{\textsc{SAT}}\pause
+      \item {\scriptsize\blue{\texttt{(get-model)}}}: retrieve a concrete model
+    \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{Search Algorithm: Main Concepts}
+    Principles of constraint handling\pause
+
+    \begin{enumerate}
+      \item Push an assertion frame at every decision\pause
+      \item At each decision, {\scriptsize\blue{\texttt{assert}}} all constraints associated with the expanded \blue{$dt$} node and call {\scriptsize\blue{\texttt{check-sat}}}\pause
+      \item Backtrack and pop an assertion level if {\scriptsize\blue{\texttt{check-sat}}} yields \blue{\textsc{Unsat}}\pause
+      \item Do not commit to concrete values; call {\scriptsize\blue{\texttt{get-model}}} once \blue{$dt$} is closed
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile] \frametitle{Search Algorithm: Main concepts}
+    There are wrinkles...\pause
+\vspace{-4pt}
+    \begin{enumerate}
+
+    \item Constraints must be \green{disambiguated} and \green{universalized}\pause
+    \end{enumerate}
+
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@ { ... };
+@\color{darkred}<PAYLOAD>@ ::= @\color{teal}<F1>@ @\color{teal}<F2>@ @\color{darkred}<BYTES>@ 
+@\highlight@ { @\color{darkred}<BYTES>@.@\color{teal}<OPT>@ bvugt 0x0; };
+@\color{darkred}<BYTES>@ ::= @\color{teal}<BYTE>@ @\color{darkred}<BYTES>@ | @\color{teal}<BYTE>@ | @\color{teal}<OPT>@; ...
+\end{lstlisting}
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child[opacity=.5] { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child[opacity=.5] { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child[opacity=.5] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child[opacity=.5] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
+          % shift children of Bytes down to elongate arrows
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            % this edge stays solid 
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      };
+  \end{tikzpicture}%
+}
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c} 
+    \blue{$\mathsf{packet0\_payload0\_bytes0\_opt0} >_{bv} 0x0$} & \dttreee 
+  \end{tabular}
+  % \dttreee
+}
+\end{frame}
+
+% \begin{frame} \frametitle{Search Algorithm: Main concepts}
+%     There are wrinkles...
+
+%     \begin{enumerate}
+
+%     \item Constraints must be \green{disambiguated} and \green{universalized}
+
+%     \item Constraints may not be \green{applicable} 
+%     \begin{itemize}
+%       \item Extra constraint set \blue{$C$} to store inapplicable constraints
+%       \item They may become applicable with future expansions! 
+%       \item Remove \blue{$c$} from \blue{$C$} when its production rule instance has been backtracked
+%     \end{itemize}
+%     \end{enumerate}
+% \end{frame}
+
+\begin{frame}[fragile] \frametitle{Search Algorithm: Main concepts}
+    There are wrinkles...
+\vspace{-4pt}
+    \begin{enumerate}
+    % \item Constraints must be \green{disambiguated} and \green{universalized}
+    \item[2.] This constraint is not \green{applicable}!
+    \vspace{-4pt}
+    \begin{itemize}
+      \item Can it be applicable after a future decision? 
+      \item Extra constraint set \blue{$C$} to store inapplicable constraints
+      \item Remove from \blue{$C$} when backtracking
+    \end{itemize}
+    \end{enumerate}
+\newcommand{\dttreee}{%
+  \begin{tikzpicture}[
+    scale=0.7, transform shape,
+    level distance=14mm,
+    % root children (Type, Aux, Payload)
+    level 1/.style={sibling distance=25mm},
+    % children of Payload (F1, F2, Bytes)
+    level 2/.style={sibling distance=17mm},
+    % children of Bytes (Byte, Bytes)
+    level 3/.style={sibling distance=17mm},
+    baseline=(current bounding box.center),
+  ]
+    \node {$\langle$Packet$\rangle[0]$} [-to]
+      child[opacity=.5] { node {$\langle$Type$\rangle[0]$}
+        child { node {sym\_leaf} }}
+      child[opacity=.5] { node {$\langle$Aux$\rangle[0]$}
+        child { node {dep\_leaf} } }
+      child { node {$\langle$Payload$\rangle[0]$} 
+        child[opacity=.5] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+          child { node {sym\_leaf} } }
+        child[opacity=.5] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+          child { node {sym\_leaf} }}
+        child { node[yshift=-18pt,name=bytesnode] {$\langle$Bytes$\rangle[0]$} 
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
+            child[-to,solid] { node {sym\_leaf} } }
+          child[-to,dotted] { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} } }
+      }; 
+
+  \node[draw, ellipse, fit=(bytesnode), inner sep=.5pt] {};
+  \end{tikzpicture}%
+}
+\resizebox{\textwidth}{!}{%
+  \begin{tabular}{c c} 
+    \blue{$\mathsf{packet0\_payload0\_bytes0\_opt0} >_{bv} 0x0$} & \dttreee 
+  \end{tabular}
+  % \dttreee
+}
+\end{frame}
+
 
 \begin{frame}
     \frametitle{Formal guarantees}
