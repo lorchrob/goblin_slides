@@ -369,7 +369,7 @@ Termination? (Mostly) well-formed inputs?
         \end{tikzpicture}}}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[noframenumbering]
     \frametitle{Input generation vs fuzzing} 
     \system{} is an \green{input generator}, but not a (complete) \green{fuzzer} \\[8pt]
         \resizebox{\linewidth}{!}{
@@ -704,7 +704,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
     \frametitle{Derived Field Checks}
     Derived fields \blue{$\langle F \rangle \leftarrow e$} must be computable \green{without constraint solving}\pause
     \begin{itemize}
-        \item[1.] Disallow \green{cyclic dependencies} (e.g. \blue{$\langle A \rangle \rightarrow T[\langle B\rangle], \langle B\rangle \rightarrow T[\langle A\rangle]$})\pause
+        \item[1.] Disallow \green{cyclic dependencies} (e.g. \blue{$\langle A \rangle \leftarrow T[\langle B\rangle], \langle B\rangle \leftarrow T[\langle A\rangle]$})\pause
         \begin{itemize}
             \item[$(i)$] Build a directed graph for each prod rule\pause
             \item[$(ii)$] Include vertex for each RHS nonterminal/symbolic terminal\pause
