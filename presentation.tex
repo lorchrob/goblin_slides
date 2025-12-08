@@ -520,22 +520,43 @@ RG_CONT ::= RG_LENGTH RG_TY @\color{teal}GROUP\_ID@
 
 \end{frame}
 
-\begin{frame}\frametitle{Prior work} \pause
-ISLa
-\begin{itemize}
-  \item Global constraints make structure-aware mutations less precise
-  \item Only natively supports string constraints
-  \item ``Maximalist'' design philosophy
-\end{itemize} \pause
+\begin{frame}\frametitle{Prior work}
+\begin{table}
+\centering
+\scriptsize
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l l l l l}
+\hline
+\textbf{Tool} & \textbf{Constraint type} & \textbf{Philosophy} &
+\textbf{Search algo} & \textbf{Supported theories} \\
+\hline
+\system{} & Local & Minimalist & Constraint solving & All \\
+ISLa & Global & Maximalist & Constraint solving & Strings \\
+Fandango & Global & Maximalist & Genetic algo & All \\
+\hline
+\end{tabular}
+\end{table}
 
-Fandango
-\begin{itemize}
-  \item Uses  \green{genetic algorithms} with built-in fitness functions
-  \item Constraints may be \green{non-monotonic} (no monotonically decreasing notion of distance for constraint satisfaction)
-  \item Times out for simple examples (equality, set membership)
-  % \item Times out with SAECRED grammars
-\end{itemize}
+\center{Fandango constraints may be \green{non-monotonic} (no monotonically decreasing notion of distance for constraint satisfaction)
+and time out for simple examples (equality, set membership)}
 \end{frame}
+
+% \begin{frame}\frametitle{Prior work} \pause
+% ISLa
+% \begin{itemize}
+%   \item Global constraints make structure-aware mutations less precise
+%   \item Only natively supports string constraints
+%   \item ``Maximalist'' design philosophy
+% \end{itemize} \pause
+
+% Fandango
+% \begin{itemize}
+%   \item Uses  \green{genetic algorithms} with built-in fitness functions
+%   \item Constraints may be \green{non-monotonic} (no monotonically decreasing notion of distance for constraint satisfaction)
+%   \item Times out for simple examples (equality, set membership)
+%   % \item Times out with SAECRED grammars
+% \end{itemize}
+% \end{frame}
 
 \begin{frame}
 \begin{enumerate}
