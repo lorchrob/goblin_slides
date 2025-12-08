@@ -515,8 +515,8 @@ RG_CONT ::= RG_LENGTH RG_TY @\color{teal}GROUP\_ID@
   { @\color{teal}GROUP\_ID@ is equal to 13 }
 ...
 \end{lstlisting}\pause 
-
-{\centering {\textbf{Prior work cannot tie \green{global constraints} to mutations}}}
+\vspace{-4pt}
+\center {{\textbf{Prior work cannot tie \green{global constraints} to mutations}}}
 
 \end{frame}
 
@@ -1021,6 +1021,8 @@ Choosing an expansion is called a \green{decision}
 
 Decisions are recorded in a \green{decision stack} \blue{$ds = [dt_1, dt_2]$}
 
+Version control helps you undo mistakes!
+
  % --- helper: two derivation trees of different heights ---
 \newcommand{\dttree}{%
   \begin{tikzpicture}[
@@ -1165,8 +1167,14 @@ These are called \green{normalization steps} and are not stored in \blue{$ds$}
 
 \begin{frame}[fragile]
     \frametitle{Search Algorithm: Main Concepts}
-\green{Termination} is not guaranteed
+\green{Termination} is not guaranteed... \pause 
 
+\center {\textbf{Idea: Bound search depth with IDS}}
+
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Search Algorithm: Main Concepts}
 Pick a \green{depth limit} \blue{$L$} and associate a \green{search depth} with each \blue{$dt$}
 
 \green{Backtrack} once \blue{$L$} is exceeded by popping \blue{$ds$}
@@ -1259,6 +1267,9 @@ Record visited expansions and do not revisit
 \begin{frame} \frametitle{Search Algorithm: Main Concepts}
     Principles of constraint handling\pause
 
+    \vspace{-4pt}
+    \center {\textbf{Idea: utilize incrementality of SMT engine to repair flawed} 
+    \textbf{candidate solutions (fear of commitment)}} \pause 
     \begin{enumerate}
       \item Push an assertion frame at every decision\pause
       \item At each decision, {\scriptsize\blue{\texttt{assert}}} all constraints associated with the expanded \blue{$dt$} node and call {\scriptsize\blue{\texttt{check-sat}}}\pause
