@@ -561,7 +561,7 @@ Fandango
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Production rules}\pause
 \system{} grammars have \green{production rules} as in CFGs\\[4pt]\pause
 \begin{lstlisting}[style=goblin]
 @\highlight@@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@;
@@ -579,7 +579,7 @@ Fandango
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Type annotations}\pause
 Use \green{symbolic terminals} (in \teal {teal}) with \green{type annotations} rather than 
 concrete terminals. Capture \green{abstract syntax}, not \green{concrete syntax}\\[4pt]
 \begin{lstlisting}[style=goblin]
@@ -598,7 +598,7 @@ concrete terminals. Capture \green{abstract syntax}, not \green{concrete syntax}
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Refinement types}\pause
 Constrain symbolic terminals with \green{refinement types}\\[4pt]
 \begin{lstlisting}[style=goblin]
 @\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@;
@@ -616,7 +616,7 @@ Constrain symbolic terminals with \green{refinement types}\\[4pt]
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Semantic constraints}\pause
 Attach \green{semantic constraints} to production rules
 
 Support types/functions/predicates with \green{SMT-LIB} analogues\\[4pt]
@@ -636,7 +636,7 @@ Support types/functions/predicates with \green{SMT-LIB} analogues\\[4pt]
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Dot notation}\pause
 Reference child nonterminals with \green{dot notation}\\[4pt]
 \begin{lstlisting}[style=goblin]
 @\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@
@@ -654,7 +654,7 @@ Reference child nonterminals with \green{dot notation}\\[4pt]
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Dot notation}\pause
 Dot notation is \green{partial} and \green{implicitly universally quantified}\\[4pt]
 \begin{lstlisting}[style=goblin]
 @\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@
@@ -672,7 +672,7 @@ Dot notation is \green{partial} and \green{implicitly universally quantified}\\[
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{\system{} by example: Language features}
+    \frametitle{Language features: Derived fields}\pause
 Many constraints are not amenable to \green{automated constraint solving} 
 with an \green{SMT engine}\\[4pt]
 \begin{lstlisting}[style=goblin]
@@ -685,6 +685,22 @@ with an \green{SMT engine}\\[4pt]
 \green{Derived fields} with \blue{\scriptsize\texttt{<-}} denote nonterminals that are directly computable, enforced syntactically \pause
 
 Cryptographic hashes, checksums, or \green{any computable function}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Language features: Derived fields}
+\begin{lstlisting}[style=goblin]
+@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@
+@\highlight@  { @\color{teal}<AUX>@ <- @\color{darkred}<PAYLOAD>@.@\color{teal}<F1>@ bvmul @\color{darkred}<PAYLOAD>@.@\color{teal}<F2>@;
+...
+@\color{darkred}<PAYLOAD>@ ::= @\color{teal}<F1>@ @\color{teal}<F2>@ @\color{darkred}<BYTES>@ 
+...
+\end{lstlisting} 
+\green{Derived fields} with \blue{\scriptsize\texttt{<-}} denote nonterminals that are directly computable, enforced syntactically\pause 
+
+Operators \blue{\scriptsize\texttt{<-}} and \blue{\scriptsize\texttt{=}} are semantically interchangeable\pause 
+
+But try telling an SMT solver to find \blue{$x$} such that \blue{$\mathsf{hash}(x) = y$}...
 \end{frame}
 
 \tikzset{
@@ -1279,7 +1295,7 @@ Record visited expansions and do not revisit
 \end{frame}
 
 \begin{frame}[fragile] \frametitle{Search Algorithm: Main concepts}
-    There are wrinkles...\pause
+    But wait, there's more...\pause
 \vspace{-4pt}
     \begin{enumerate}
 
