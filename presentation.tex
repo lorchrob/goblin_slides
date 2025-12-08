@@ -191,6 +191,42 @@ Stony Brook University
     %   - we have a spec and we want to generate inputs
 \end{frame}
 
+\begin{frame}\frametitle{Roadmap} 
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics 
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
+\end{frame} 
+
+\begin{frame}
+\begin{enumerate}
+  \item \green{\textbf{Existing approaches to input generation}}
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics 
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
+\end{frame}
+
 \begin{frame} 
     \frametitle{Existing Approaches} 
     \begin{itemize}
@@ -225,6 +261,7 @@ Stony Brook University
 
 \begin{frame} 
     \frametitle{Wishlist} 
+    An input generation approach that gives...\pause
     \begin{enumerate}
         \item Generality of CFG-based approaches\pause
         \item Expressiveness of tailor-made fuzzers\pause
@@ -291,11 +328,11 @@ Termination? (Mostly) well-formed inputs?
         \item A \green{context-sensitive input generation tool}, supported by \pause
         \item A new \green{DSL} with a formal semantics \pause
         \item A new \green{search algorithm} to address the underlying problem \pause
-        \item Supporting constraint solving over arbitrary SMT theories \pause
+        \item Supporting constraint solving over \green{arbitrary SMT theories} \pause
         \item And evaluated in the context of real fuzzing workflows \pause
         \end{itemize}
         \item Given a \green{context-sensitive grammar} \blue{$G$}, find \blue{$x$} such that \blue{$x \in \mathcal{L}(G)$} \pause
-        \item What is a context-sensitive grammar? 
+        \item What is a context-sensitive grammar? See ANTLR, yacc \pause
 \begin{lstlisting}[style=goblin]
 <xml-tree> ::= <openclose-tag> | 
                <open-tag> <inner-tree> <close-tag>
@@ -325,18 +362,18 @@ Termination? (Mostly) well-formed inputs?
             \node[data] (inp) at (0,2) {Grammar/spec};
             \node[box] (sys) at (2,2) {\system{}};
             \node[data] (sutinp) at (4,2) {SUT input};
-            \node[box][opacity=.5] (dr) at (4,1) {Fuzzing driver};
-            \node[box][opacity=.5] (sut) at (6,1) {SUT};
-            \node[data][opacity=.5] (sutout) at (6,0) {SUT output};
+            \node[box][opacity=.3] (dr) at (4,1) {Fuzzing driver};
+            \node[box][opacity=.3] (sut) at (6,1) {SUT};
+            \node[data][opacity=.3] (sutout) at (6,0) {SUT output};
 
             % Arrows
             \draw[->] (inp.east) -- (sys.west);
             \draw[->] (sys.east) -- (sutinp.west);
-            \draw[->][opacity=.5] (sutinp.south) -- (dr.north);
-            \draw[->][opacity=.5] (dr.east) -- (sut.west);
-            \draw[->][opacity=.5] (dr.west) -| (sys.south);
-            \draw[->][opacity=.5] (sut.south) -- (sutout.north);
-            \draw[->][opacity=.5] (sutout.west) -| (dr.south);
+            \draw[->][opacity=.3] (sutinp.south) -- (dr.north);
+            \draw[->][opacity=.3] (dr.east) -- (sut.west);
+            \draw[->][opacity=.3] (dr.west) -| (sys.south);
+            \draw[->][opacity=.3] (sut.south) -- (sutout.north);
+            \draw[->][opacity=.3] (sutout.west) -| (dr.south);
         \end{tikzpicture}}}
 \end{frame}
 
@@ -356,16 +393,16 @@ Termination? (Mostly) well-formed inputs?
             \node[data] (sutinp) at (4,2) {SUT input};
             \node[box] (dr) at (4,1) {Fuzzing driver};
             \node[box] (sut) at (6,1) {SUT};
-            \node[data][opacity=.5] (sutout) at (6,0) {SUT output};
+            \node[data][opacity=.3] (sutout) at (6,0) {SUT output};
 
             % Arrows
             \draw[->] (inp.east) -- (sys.west);
             \draw[->] (sys.east) -- (sutinp.west);
             \draw[->] (sutinp.south) -- (dr.north);
             \draw[->] (dr.east) -- (sut.west);
-            \draw[->][opacity=.5] (dr.west) -| (sys.south);
-            \draw[->][opacity=.5] (sut.south) -- (sutout.north);
-            \draw[->][opacity=.5] (sutout.west) -| (dr.south);
+            \draw[->][opacity=.3] (dr.west) -| (sys.south);
+            \draw[->][opacity=.3] (sut.south) -- (sutout.north);
+            \draw[->][opacity=.3] (sutout.west) -| (dr.south);
         \end{tikzpicture}}}
 \end{frame}
 
@@ -398,9 +435,134 @@ Termination? (Mostly) well-formed inputs?
         \end{tikzpicture}}}
 \end{frame}
 
+\begin{frame}[noframenumbering]
+    \frametitle{Input generation vs fuzzing} 
+    Most tools perform mutations at the \green{byte level} \\[8pt]
+        \resizebox{\linewidth}{!}{
+        {\scriptsize\begin{tikzpicture}[
+            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center},
+            data/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center},
+            dataemph/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center, fill=lightgray}
+            ]
+ 
+            % Nodes with manual coordinates
+            \node[data] (inp) at (0,2) {Grammar/spec};
+            \node[box] (sys) at (2,2) {\system{}};
+            \node[dataemph] (sutinp) at (4,2) {SUT input};
+            \node[box] (dr) at (4,1) {Fuzzing driver};
+            \node[box] (sut) at (6,1) {SUT};
+            \node[data] (sutout) at (6,0) {SUT output};
+
+            % Arrows
+            \draw[->] (inp.east) -- (sys.west);
+            \draw[->] (sys.east) -- (sutinp.west);
+            \draw[->] (sutinp.south) -- (dr.north);
+            \draw[->] (dr.east) -- (sut.west);
+            \draw[->] (dr.west) -| (sys.south);
+            \draw[->] (sut.south) -- (sutout.north);
+            \draw[->] (sutout.west) -| (dr.south);
+        \end{tikzpicture}}}
+\end{frame}
+
+\begin{frame}[noframenumbering]
+    \frametitle{Input generation vs fuzzing} 
+    Some tools perform \green{structure-aware mutations} (ATFuzz, SAECRED) \\[8pt]
+        \resizebox{\linewidth}{!}{
+        {\scriptsize\begin{tikzpicture}[
+            box/.style={draw, rectangle, minimum width=1cm, minimum height=.5cm, align=center},
+            data/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center},
+            dataemph/.style={draw, trapezium, trapezium left angle=70, trapezium right angle=110,
+                 minimum width=1.2cm, minimum height=.5cm, align=center, fill=lightgray}
+            ]
+ 
+            % Nodes with manual coordinates
+            \node[dataemph] (inp) at (0,2) {Grammar/spec};
+            \node[box] (sys) at (2,2) {\system{}};
+            \node[data] (sutinp) at (4,2) {SUT input};
+            \node[box] (dr) at (4,1) {Fuzzing driver};
+            \node[box] (sut) at (6,1) {SUT};
+            \node[data] (sutout) at (6,0) {SUT output};
+
+            % Arrows
+            \draw[->] (inp.east) -- (sys.west);
+            \draw[->] (sys.east) -- (sutinp.west);
+            \draw[->] (sutinp.south) -- (dr.north);
+            \draw[->] (dr.east) -- (sut.west);
+            \draw[->] (dr.west) -| (sys.south);
+            \draw[->] (sut.south) -- (sutout.north);
+            \draw[->] (sutout.west) -| (dr.south);
+        \end{tikzpicture}}}
+\end{frame}
+
+\begin{frame}[fragile]
+    \frametitle{Structure-aware mutations}
+How to perform \green{context-sensitive, structure-aware} mutations? \pause
+
+\green{Crossover mutation} swapping {\color{teal}\scriptsize\texttt{GROUP\_ID}} and {\color{teal}\scriptsize\texttt{RG\_LIST}}
+\begin{lstlisting}[style=plain]
+COMMIT ::= SEQ @\color{teal}GROUP\_ID@ SCALAR 
+  { @\color{teal}GROUP\_ID@ is equal to 13  and  SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY @\color{teal}RG\_LIST@
+  { RG_LENGTH is the length of @\color{teal}RG\_LIST@ }
+...
+-->
+COMMIT ::= SEQ @\color{teal}RG\_LIST@ SCALAR
+  { SEQ is greater than 4 }
+RG_CONT ::= RG_LENGTH RG_TY @\color{teal}GROUP\_ID@
+  { @\color{teal}GROUP\_ID@ is equal to 13 }
+...
+\end{lstlisting}\pause 
+
+{\centering {\textbf{Prior work cannot tie \green{global constraints} to mutations}}}
+
+\end{frame}
+
+\begin{frame}\frametitle{Prior work} \pause
+ISLa
+\begin{itemize}
+  \item Global constraints make structure-aware mutations less precise
+  \item Only natively supports string constraints
+  \item ``Maximalist'' design philosophy
+\end{itemize} \pause
+
+Fandango
+\begin{itemize}
+  \item Uses  \green{genetic algorithms} with built-in fitness functions
+  \item Constraints may be \green{non-monotonic} (no monotonically decreasing notion of distance for constraint satisfaction)
+  \item Times out for simple examples (equality, set membership)
+  % \item Times out with SAECRED grammars
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item \green{\textbf{Syntax and language features}}
+  \item Semantics 
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
+\end{frame}
+
+\begin{frame}\frametitle{\system{} by example: Language features}
+  \system{}'s \green{minimalist} design philosophy positions it as an \green{intermediate language} 
+  (compile target), not a \green{user-facing language} (future work)
+\end{frame}
+
 \begin{frame}[fragile]
     \frametitle{\system{} by example: Language features}
-\system{} grammars have \green{production rules} as in CFGs\\[4pt]
+\system{} grammars have \green{production rules} as in CFGs\\[4pt]\pause
 \begin{lstlisting}[style=goblin]
 @\highlight@@\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@;
 
@@ -455,7 +617,7 @@ Constrain symbolic terminals with \green{refinement types}\\[4pt]
 
 \begin{frame}[fragile]
     \frametitle{\system{} by example: Language features}
-Attach \green{semantic constraits} to production rules
+Attach \green{semantic constraints} to production rules
 
 Support types/functions/predicates with \green{SMT-LIB} analogues\\[4pt]
 \begin{lstlisting}[style=goblin]
@@ -534,9 +696,30 @@ Cryptographic hashes, checksums, or \green{any computable function}
                  trapezium left angle=70, trapezium right angle=110,
                  fill=gray!15, very thick}
 } 
+
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item \green{\textbf{Semantics}}
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
+\end{frame}
+
 \begin{frame} 
     \frametitle{Semantics: Abstract syntax trees}
 % \begin{itemize}
+  What are the semantics of a \system{} grammar? \pause
+
     \system{} generates \green{abstract syntax trees}, not strings\pause
 %     \item AST view with SMT-LIB types enables constraint solving over SMT theories 
 %     (prior work only natively supports string constraints)
@@ -620,14 +803,14 @@ Cryptographic hashes, checksums, or \green{any computable function}
       leaf/.style={draw, ellipse, inner sep=2pt}
     ]
       \node {1: $\langle$Packet$\rangle[0]$} [-to]
-        child[opacity=.5] { node {2: $\langle$Type$\rangle[0]$}
+        child[opacity=.3] { node {2: $\langle$Type$\rangle[0]$}
           child { node[leaf] {5: $0x01$} }}
         child { node {3: $\langle$Aux$\rangle[0]$}
           child { node[leaf] {6: $0x06$} } }
         child { node {4: $\langle$Payload$\rangle[0]$} 
           child { node {7: $\langle$F1$\rangle[0]$} child { node[leaf] {10: $0x02$} } }
           child { node {8: $\langle$F2$\rangle[0]$} child { node[leaf] {11: $0x03$} } }
-          child[opacity=.5] { node {9: $\langle$Bytes$\rangle[0]$} child { node {12: $\langle$Byte$\rangle[1]$} child { node[leaf] {13: $0x21$} } } } };
+          child[opacity=.3] { node {9: $\langle$Bytes$\rangle[0]$} child { node {12: $\langle$Byte$\rangle[1]$} child { node[leaf] {13: $0x21$} } } } };
     \end{tikzpicture}%
   }
   {\center \dttree}
@@ -649,18 +832,36 @@ Cryptographic hashes, checksums, or \green{any computable function}
       level 2/.style={sibling distance=25mm},
       leaf/.style={draw, ellipse, inner sep=2pt}
     ]
-      \node[opacity=.5] {1: $\langle$Packet$\rangle[0]$} [-to]
-        child[opacity=.5] { node {2: $\langle$Type$\rangle[0]$}
+      \node[opacity=.3] {1: $\langle$Packet$\rangle[0]$} [-to]
+        child[opacity=.3] { node {2: $\langle$Type$\rangle[0]$}
           child { node[leaf] {5: $0x01$} }}
-        child[opacity=.5] { node {3: $\langle$Aux$\rangle[0]$}
+        child[opacity=.3] { node {3: $\langle$Aux$\rangle[0]$}
           child { node[leaf] {6: $0x06$} } }
-        child[opacity=.5] { node {4: $\langle$Payload$\rangle[0]$} 
+        child[opacity=.3] { node {4: $\langle$Payload$\rangle[0]$} 
           child { node {7: $\langle$F1$\rangle[0]$} child { node[leaf] {10: $0x02$} } }
           child { node {8: $\langle$F2$\rangle[0]$} child { node[leaf] {11: $0x03$} } }
           child { node {9: $\langle$Bytes$\rangle[0]$} child { node[opacity=1] {12: $\langle$Byte$\rangle[1]$} child[opacity=1] { node[leaf] {13: $0x21$} } } } };
     \end{tikzpicture}%
   }
   {\center \dttree}
+\end{frame}
+
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics
+  \item \green{\textbf{\system{} workflow}}
+  \begin{itemize}
+    \item \green{\textbf{Well-formedness checks}}
+    \item \green{\textbf{Derived fields}}
+    \item \green{\textbf{Main search algorithm}}
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
 \end{frame}
 
 \begin{frame} 
@@ -705,13 +906,16 @@ Cryptographic hashes, checksums, or \green{any computable function}
     Derived fields \blue{$\langle F \rangle \leftarrow e$} must be computable \green{without constraint solving}\pause
     \begin{itemize}
         \item[1.] Disallow \green{cyclic dependencies} (e.g. \blue{$\langle A \rangle \leftarrow T[\langle B\rangle], \langle B\rangle \leftarrow T[\langle A\rangle]$})\pause
-        \begin{itemize}
-            \item[$(i)$] Build a directed graph for each prod rule\pause
-            \item[$(ii)$] Include vertex for each RHS nonterminal/symbolic terminal\pause
-            \item[$(iii)$] Check for cycles\pause
-        \end{itemize}
+        % \begin{itemize}
+        %     \item[$(i)$] Build a directed graph for each production rule\pause
+        %     \item[$(ii)$] Include vertex for each RHS nonterminal/symbolic terminal\pause
+        %     \item[$(iii)$] Include an edge from $\langle A \rangle$ to $\langle B \rangle$ when  
+        %     $\langle A \rangle$'s definition includes $\langle B \rangle$ as a subterm
+        %     \item[$(iv)$] Check for cycles\pause
+        % \end{itemize}
         \item[2.] Disallow derived fields in semantic constraints\pause
         \begin{itemize}
+            \item Two stages of computation
             \item E.g., \blue{$\langle D \rangle > 0$} where \blue{$\langle D \rangle$} is derived
         \end{itemize}
     \end{itemize}
@@ -719,7 +923,7 @@ Cryptographic hashes, checksums, or \green{any computable function}
 
 \begin{frame}[fragile]
     \frametitle{Abstract derived fields}
-We remove derived fields from $G$ before the main search; 
+We remove derived fields from \blue{$G$} before the main search; 
 compute them after constraint solving\pause
 \begin{lstlisting}[style=goblin]
 @\color{darkred}<PACKET>@ ::= @\color{teal}<TYPE>@ @\color{teal}<AUX>@ @\color{darkred}<PAYLOAD>@
@@ -739,7 +943,7 @@ Start with \green{context-free case} \pause
 
 A \green{derivation tree} is an AST that may be \green{open} (or \green{closed})\pause
 \begin{enumerate}
-\item Build candidate \blue{$\mathit{dt}$} via random walk until closed
+\item Build candidate \blue{$\mathit{dt}$} via random walk until closed (as in XML)
 \item Then instantiate with concrete values 
 \end{enumerate}\pause
 
@@ -1090,14 +1294,14 @@ Record visited expansions and do not revisit
     baseline=(current bounding box.center),
   ]
     \node {$\langle$Packet$\rangle[0]$} [-to]
-      child[opacity=.5] { node {$\langle$Type$\rangle[0]$}
+      child[opacity=.3] { node {$\langle$Type$\rangle[0]$}
         child { node {sym\_leaf} }}
-      child[opacity=.5] { node {$\langle$Aux$\rangle[0]$}
+      child[opacity=.3] { node {$\langle$Aux$\rangle[0]$}
         child { node {dep\_leaf} } }
       child { node {$\langle$Payload$\rangle[0]$} 
-        child[opacity=.5] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+        child[opacity=.3] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
           child { node {sym\_leaf} } }
-        child[opacity=.5] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+        child[opacity=.3] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
           child { node {sym\_leaf} }}
         child { node[yshift=-18pt] {$\langle$Bytes$\rangle[0]$} 
           % shift children of Bytes down to elongate arrows
@@ -1158,14 +1362,14 @@ Record visited expansions and do not revisit
     baseline=(current bounding box.center),
   ]
     \node {$\langle$Packet$\rangle[0]$} [-to]
-      child[opacity=.5] { node {$\langle$Type$\rangle[0]$}
+      child[opacity=.3] { node {$\langle$Type$\rangle[0]$}
         child { node {sym\_leaf} }}
-      child[opacity=.5] { node {$\langle$Aux$\rangle[0]$}
+      child[opacity=.3] { node {$\langle$Aux$\rangle[0]$}
         child { node {dep\_leaf} } }
       child { node {$\langle$Payload$\rangle[0]$} 
-        child[opacity=.5] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
+        child[opacity=.3] { node[yshift=-18pt] {$\langle$F1$\rangle[0]$} 
           child { node {sym\_leaf} } }
-        child[opacity=.5] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
+        child[opacity=.3] { node[yshift=-18pt] {$\langle$F2$\rangle[0]$} 
           child { node {sym\_leaf} }}
         child { node[yshift=-18pt,name=bytesnode] {$\langle$Bytes$\rangle[0]$} 
           child[-to,dotted] { node[yshift=-18pt] {$\langle$Byte$\rangle[0]$}
@@ -1184,6 +1388,23 @@ Record visited expansions and do not revisit
 }
 \end{frame}
 
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item \green{\textbf{Formal guarantees}}
+  \item Evaluation
+  \item Discussion and future work
+\end{enumerate}
+\end{frame}
 
 \begin{frame}
     \frametitle{Formal guarantees}
@@ -1191,6 +1412,24 @@ Record visited expansions and do not revisit
 
     We prove the calculus satisfies \green{solution soundness}, \green{refutation soundness}, 
     and \green{solution completeness}     
+\end{frame}
+
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item \green{\textbf{Evaluation}}
+  \item Discussion and future work
+\end{enumerate}
 \end{frame}
 
 \begin{frame}
@@ -1222,6 +1461,24 @@ Record visited expansions and do not revisit
     % Comparison w/ SAECRED
     %   36x faster 
     %   Can produce outputs for more than twice the inputs (~24,000 -> ~49,000 / ~97,000)
+\end{frame}
+
+\begin{frame}
+\begin{enumerate}
+  \item Existing approaches to input generation
+  % \item \system{} philosophy
+  \item Syntax and language features
+  \item Semantics
+  \item \system{} workflow
+  \begin{itemize}
+    \item Well-formedness checks
+    \item Derived fields
+    \item Main search algorithm
+  \end{itemize}
+  \item Formal guarantees
+  \item Evaluation
+  \item \green{\textbf{Discussion and future}}
+\end{enumerate}
 \end{frame}
 
 \begin{frame}
@@ -1323,22 +1580,23 @@ Every element of the second list is present in the first
 \end{frame}
 
 \begin{frame}[fragile]
-    \frametitle{Local constraints for grammar mutation}
+    \frametitle{Grammar mutations}
+How to perform structure-aware mutations on context-sensitive grammars?
 \begin{itemize}
     \item \green{Crossover mutation} swapping {\scriptsize\texttt{GROUP\_ID}} and {\scriptsize\texttt{RG\_LIST}}
     \item \green{Local constraints} are easier to maintain
 \end{itemize}
 
 \begin{lstlisting}[style=plain]
-COMMIT ::= SEQ GROUP_ID SCALAR
+COMMIT ::= SEQ @\color{teal}GROUP\_ID@ SCALAR
   { GROUP_ID is equal to 13  and  SEQ is greater than 4 }
-RG_CONT ::= RG_LENGTH RG_TY RG_LIST
+RG_CONT ::= RG_LENGTH RG_TY @\color{teal}RG\_LIST@
   { RG_LENGTH is the length of RG_LIST }
 ...
 -->
-COMMIT ::= SEQ RG_LIST SCALAR
+COMMIT ::= SEQ @\color{teal}RG\_LIST@ SCALAR
   { SEQ is greater than 4 }
-RG_CONT ::= RG_LENGTH RG_TY GROUP_ID
+RG_CONT ::= RG_LENGTH RG_TY @\color{teal}GROUP\_ID@
   { GROUP_ID is equal to 13 }
 ...
 \end{lstlisting}
